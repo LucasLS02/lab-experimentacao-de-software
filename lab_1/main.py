@@ -1,36 +1,60 @@
 from os import environ
 
+import pandas as pd
 from dotenv import load_dotenv
 from requests import post
 
 load_dotenv()
 
-query = '''
+query = """
 {
-  viewer {
-    repositories(first: 10) {
-      edges {
-        node {
+  search(query: "stars:>100", type: REPOSITORY, first: 100) {
+    nodes {
+      ... on Repository {
+        id
+        name
+        createdAt
+        updatedAt
+        primaryLanguage {
+          id
           name
-          description
-          url
+        }
+        releases(orderBy: {field: CREATED_AT, direction: DESC}) {
+          totalCount
+        }
+        pullRequests(states: MERGED) {
+          totalCount
+        }
+        issues {
+          totalCount
+        }
+        IssuesClosed: issues(states: CLOSED) {
+          totalCount
         }
       }
     }
   }
 }
-'''
-
-payload = {
-    'query': query
-}
+"""
 
 headers = {
     'Authorization': f'bearer {environ["GITHUB_ACCESS_TOKEN"]}'
 }
 
-response = post(url=environ['GITHUB_GRAPHQL_ENDPOINT'], json=payload, headers=headers)
+data = {
+    'query': query
+}
+
+response = post(environ['GITHUB_GRAPHQL_ENDPOINT'], json=data, headers=headers)
 
 response_data = response.json()
 
-print(response_data)
+nodes_data = response_data['data']['search']['nodes']
+
+df = pd.DataFrame(nodes_data)
+
+csv_filename = "data.csv"
+
+df.to_csv(csv_filename, index=False)
+
+print('Data acquired and saved to data.csv')
