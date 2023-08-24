@@ -8,7 +8,7 @@ def paginated_query(query, data_amount=100, page_size=50):
     for index in range(0, data_amount + 1, page_size):
         cursor = generate_cursor(index)
 
-        query_copy = query.replace('after: {}', f'after: "{cursor}"')
+        query_copy = query.replace('after: null', f'after: "{cursor}"')
 
         data = {
             'query': query_copy

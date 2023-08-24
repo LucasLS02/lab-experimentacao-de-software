@@ -9,34 +9,35 @@ def lab_1_search():
 
     query = '''
             {
-                  search(query: "stars:>100", type: REPOSITORY, first: 50, after: {}) {
+                search(query: "stars:>100", type: REPOSITORY, first: 50, after: null) {
                     nodes {
-                      ... on Repository {
-                        id
-                        name
-                        createdAt
-                        updatedAt
-                        primaryLanguage {
-                          id
-                          name
-                        }
-                        releases(orderBy: {field: CREATED_AT, direction: DESC}) {
-                          totalCount
-                        }
-                        pullRequests(states: MERGED) {
-                          totalCount
-                        }
-                        issues {
-                          totalCount
-                        }
-                        IssuesClosed: issues(states: CLOSED) {
-                          totalCount
-                        }
-                      }
+                        ... on Repository {
+                            id
+                            nameWithOwner
+                            url
+                            createdAt
+                            updatedAt
+                            primaryLanguage {
+                                id
+                                name
+                            }
+                            releases(orderBy: {field: CREATED_AT, direction: DESC}) {
+                                totalCount
+                            }
+                            pullRequests(states: MERGED) {
+                                totalCount
+                            }
+                            issues {
+                                totalCount
+                            }
+                            IssuesClosed: issues(states: CLOSED) {
+                                totalCount
+                            }
                     }
-                  }
                 }
-            '''
+            }
+        }
+    '''
 
     response_data = paginated_query(query=query, data_amount=1000, page_size=50)
 
