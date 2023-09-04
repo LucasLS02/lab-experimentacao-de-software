@@ -60,7 +60,7 @@ def lab_1_search():
             'IssuesClosed': repository['IssuesClosed']['totalCount'],
             'age': calculate_age(repository['createdAt']),
             'timeSinceLastUpdate': calculate_age(repository['updatedAt']),
-            'reasonIssuesIssuesClosed': repository['issues']['totalCount'] / repository['IssuesClosed']['totalCount'] if
+            'reasonIssuesIssuesClosed': repository['IssuesClosed']['totalCount'] / repository['issues']['totalCount'] if
             repository['IssuesClosed']['totalCount'] > 0 else 0
         })
 
