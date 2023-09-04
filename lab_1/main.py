@@ -61,7 +61,7 @@ def lab_1_search():
             'age': calculate_age(repository['createdAt']),
             'timeSinceLastUpdate': calculate_age(repository['updatedAt']),
             'reasonIssuesIssuesClosed': repository['IssuesClosed']['totalCount'] / repository['issues']['totalCount'] if
-            repository['IssuesClosed']['totalCount'] > 0 else 0
+            repository['issues']['totalCount'] > 0 else 0
         })
 
     save_on_csv(data=final_data, csv_filename=f'{__name__}_data')
