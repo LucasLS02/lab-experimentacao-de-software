@@ -1,9 +1,14 @@
 from datetime import datetime
 
 
-def calculate_age(created_at):
-    created_at = datetime.strptime(created_at, "%Y-%m-%dT%H:%M:%SZ")
+def calculate_age(date):
+    """
+    Calculates the age of a repository
+    :param date: date of creation ou update
+    :return: age: age of repository
+    """
+    normalized_age = datetime.utcnow() - datetime.strptime(date, '%Y-%m-%dT%H:%M:%SZ')
 
-    age = (datetime.utcnow() - created_at).days // 365
+    age = normalized_age.days
 
     return age
