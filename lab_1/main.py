@@ -1,6 +1,6 @@
 from time import time
 
-from utils.find_age import calculate_age
+from utils.find_age import calculate_days, calculate_hours
 from utils.paginate_query import async_paginated_query, paginated_query
 from utils.save_on_csv import save_on_csv
 
@@ -58,8 +58,8 @@ def lab_1_search():
             'pullRequests': repository['pullRequests']['totalCount'],
             'issues': repository['issues']['totalCount'],
             'IssuesClosed': repository['IssuesClosed']['totalCount'],
-            'age': calculate_age(repository['createdAt']),
-            'timeSinceLastUpdate': calculate_age(repository['updatedAt']),
+            'age': calculate_days(repository['createdAt']),
+            'timeSinceLastUpdate': calculate_hours(repository['updatedAt']),
             'reasonIssuesIssuesClosed': repository['IssuesClosed']['totalCount'] / repository['issues']['totalCount'] if
             repository['issues']['totalCount'] > 0 else 0
         })
@@ -117,8 +117,8 @@ async def async_lab_1_search(data_amount=1000, page_size=25):
     for repository in response_data:
         final_data.append({
             **repository,
-            'age': calculate_age(repository['createdAt']),
-            'timeSinceLastUpdate': calculate_age(repository['updatedAt']),
+            'age': calculate_days(repository['createdAt']),
+            'timeSinceLastUpdate': calculate_hours(repository['updatedAt']),
             'reasonIssuesIssuesClosed': repository['issues']['totalCount'] / repository['IssuesClosed']['totalCount'] if
             repository['IssuesClosed']['totalCount'] > 0 else 0
         })
