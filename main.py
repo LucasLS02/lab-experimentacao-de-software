@@ -4,6 +4,7 @@ from time import sleep
 
 import pandas as pd
 from dotenv import load_dotenv
+from numpy import median
 from pandas import read_csv
 
 from lab_2.main import lab_2_search
@@ -60,21 +61,21 @@ for index, row in data_persistance_repo.iterrows():
 
     repo_data_analysis = pd.read_csv(f'resources/repo_anaylisis/{repo_id}/class.csv')
 
-    cbo = 0
-    dit = 0
-    lcom = 0
-    loc = 0
+    cbo = []
+    dit = []
+    lcom = []
+    loc = []
 
     for index_, repo_data_row in repo_data_analysis.iterrows():
-        cbo += repo_data_row.get('cbo')
-        dit += repo_data_row.get('dit')
-        lcom += repo_data_row.get('lcom')
-        loc += repo_data_row.get('loc')
+        cbo.append(repo_data_row.get('cbo'))
+        dit.append(repo_data_row.get('dit'))
+        lcom.append(repo_data_row.get('lcom'))
+        loc.append(repo_data_row.get('loc'))
 
-    data_persistance_repo.loc[index, 'cbo'] = cbo
-    data_persistance_repo.loc[index, 'dit'] = dit
-    data_persistance_repo.loc[index, 'lcom'] = lcom
-    data_persistance_repo.loc[index, 'loc'] = loc
+    data_persistance_repo.loc[index, 'cbo'] = median(cbo)
+    data_persistance_repo.loc[index, 'dit'] = median(dit)
+    data_persistance_repo.loc[index, 'lcom'] = median(lcom)
+    data_persistance_repo.loc[index, 'loc'] = median(loc)
 
     print({
         'cbo': cbo,
