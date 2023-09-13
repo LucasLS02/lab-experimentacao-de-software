@@ -13,6 +13,7 @@ def calculate_days(date):
 
     return age
 
+
 def calculate_hours(date):
     """
     Calculates the age of a repository
@@ -21,6 +22,6 @@ def calculate_hours(date):
     """
     normalized_age = datetime.utcnow() - datetime.strptime(date, '%Y-%m-%dT%H:%M:%SZ')
 
-    age = normalized_age.seconds/3600
+    age = normalized_age.seconds / 3600
 
     return age
