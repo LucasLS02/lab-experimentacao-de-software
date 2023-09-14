@@ -1,15 +1,10 @@
-from multiprocessing import Process
 from pathlib import Path
-from time import sleep
+from time import time
 
 import pandas as pd
 from dotenv import load_dotenv
-from numpy import median
+from numpy import median, sum
 from pandas import read_csv
-
-from lab_2.main import lab_2_search
-from utils.process_utils import create_queue, create_listener_process, clone_queue_service_wrapper, \
-    ck_queue_service_wrapper
 
 # Load .env variables to be used on the functions and componentes.
 load_dotenv()
@@ -20,41 +15,43 @@ load_dotenv()
 
 # Lab 2 process
 
-lab_2_search()
+start_lab_2 = time()
 
-clone_queue = create_queue()
-ck_queue = create_queue()
+# lab_2_search()
+
+# clone_queue = create_queue()
+# ck_queue = create_queue()
 
 csv_path = Path('data/lab_2.main_data.csv')
 
 data_persistance_repo = read_csv(csv_path)
-
-for index, row in data_persistance_repo.iterrows():
-    repo_id = row.get('id')
-    repo_url = row.get('url')
-
-    clone_queue.put((repo_id, repo_url))
-
-ps: list[Process] = []
-
-for _ in range(2):
-    p = create_listener_process(clone_queue_service_wrapper, clone_queue, ck_queue)
-    p.start()
-    ps.append(p)
-for _ in range(3):
-    p = create_listener_process(ck_queue_service_wrapper, ck_queue)
-    p.start()
-    ps.append(p)
-
-all_process_are_dead = False
-while not all_process_are_dead:
-    qtd_of_process_dead = 0
-    for p in ps:
-        if not p.is_alive() or (clone_queue.empty() and ck_queue.empty()):
-            qtd_of_process_dead += 1
-    all_process_are_dead = qtd_of_process_dead == 5
-
-sleep(15)
+#
+# for index, row in data_persistance_repo.iterrows():
+#     repo_id = row.get('id')
+#     repo_url = row.get('url')
+#
+#     clone_queue.put((repo_id, repo_url))
+#
+# ps: list[Process] = []
+#
+# for _ in range(2):
+#     p = create_listener_process(clone_queue_service_wrapper, clone_queue, ck_queue)
+#     p.start()
+#     ps.append(p)
+# for _ in range(3):
+#     p = create_listener_process(ck_queue_service_wrapper, ck_queue)
+#     p.start()
+#     ps.append(p)
+#
+# all_process_are_dead = False
+# while not all_process_are_dead:
+#     qtd_of_process_dead = 0
+#     for p in ps:
+#         if not p.is_alive() or (clone_queue.empty() and ck_queue.empty()):
+#             qtd_of_process_dead += 1
+#     all_process_are_dead = qtd_of_process_dead == 5
+#
+# sleep(15)
 
 for index, row in data_persistance_repo.iterrows():
     repo_id = row.get('id')
@@ -73,15 +70,18 @@ for index, row in data_persistance_repo.iterrows():
         loc.append(repo_data_row.get('loc'))
 
     data_persistance_repo.loc[index, 'cbo'] = median(cbo)
-    data_persistance_repo.loc[index, 'dit'] = median(dit)
+    data_persistance_repo.loc[index, 'dit'] = max(dit)
     data_persistance_repo.loc[index, 'lcom'] = median(lcom)
-    data_persistance_repo.loc[index, 'loc'] = median(loc)
-
-    print({
-        'cbo': cbo,
-        'dit': dit,
-        'lcom': lcom,
-        'loc': loc
-    })
+    data_persistance_repo.loc[index, 'loc'] = sum(loc)
 
 data_persistance_repo.to_csv(csv_path, index=False)
+
+end_lab_2 = time()
+
+time_execution_lab_2 = f'{(end_lab_2 - start_lab_2) / 60} minutos'
+
+print('---------------------------------------------------------')
+print('Estatísticas do lab 2')
+print('---------------------------------------------------------')
+print(f'Tempo de execução: {time_execution_lab_2}')
+print('---------------------------------------------------------')
