@@ -4,6 +4,7 @@ from time import sleep
 from typing import Callable, Tuple
 
 from utils.class_container import ClassContainer
+from utils.verify_cloned_repository import is_alredy_cloned
 
 
 class Wrapper:
@@ -34,23 +35,23 @@ class Wrapper:
 
 
 def clone_queue_service_wrapper(row_data: Tuple[str, str]):
-    print(row_data)
-    clone_service = ClassContainer().get_clone_service()
     repo_id, repo_url = row_data[0], row_data[1]
-    try:
+    if not is_alredy_cloned(repo_id):
+        clone_service = ClassContainer().get_clone_service()
         try:
-            return clone_service.clone_repository(
-                url=f'{repo_url}.git',
-                repo_name=repo_id
-            )
+            try:
+                return clone_service.clone_repository(
+                    url=f'{repo_url}.git',
+                    repo_name=repo_id
+                )
+            except Exception as e:
+                print(e)
+                return clone_service.clone_repository(
+                    url={repo_url},
+                    repo_name=repo_id
+                )
         except Exception as e:
             print(e)
-            return clone_service.clone_repository(
-                url={repo_url},
-                repo_name=repo_id
-            )
-    except Exception as e:
-        print(e)
 
 
 def create_listener_process(
