@@ -6,16 +6,26 @@ from utils.request import async_request, request
 def paginated_query(query, data_amount=100, page_size=50):
     response_data = []
 
-    for index in range(0, data_amount, page_size):
-        cursor = generate_cursor(index)
+    cursor = None
+    has_next_page = True
 
-        query_copy = query.replace('after: null', f'after: "{cursor}"')
+    # for index in range(0, data_amount, page_size):
+    while len(response_data) < data_amount or not has_next_page:
+        # cursor = generate_cursor(index)
+
+        if cursor is None:
+            query_copy = query.replace('after: null', '')
+        else:
+            query_copy = query.replace('after: null', f'after: "{cursor}"')
 
         data = {
             'query': query_copy
         }
 
         response = request(data)
+
+        cursor = response['data']['search']['pageInfo']['endCursor']
+        has_next_page = response['data']['search']['pageInfo']['hasNextPage']
 
         while not isinstance(response, list):
             key = list(response.keys())[0]
