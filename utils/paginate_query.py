@@ -1,6 +1,6 @@
 from utils.async_utils import create_async_task, get_async_tasks_results
 from utils.cursor_generator import generate_cursor
-from utils.request import async_request, request
+from utils.request import request_graphQl_api
 
 
 def paginated_query(query, data_amount=100, page_size=50):
@@ -8,11 +8,7 @@ def paginated_query(query, data_amount=100, page_size=50):
 
     cursor = None
     has_next_page = True
-
-    # for index in range(0, data_amount, page_size):
     while len(response_data) < data_amount or not has_next_page:
-        # cursor = generate_cursor(index)
-
         if cursor is None:
             query_copy = query.replace('after: null', '')
         else:
@@ -22,7 +18,7 @@ def paginated_query(query, data_amount=100, page_size=50):
             'query': query_copy
         }
 
-        response = request(data)
+        response = request_graphQl_api(data)
 
         cursor = response['data']['search']['pageInfo']['endCursor']
         has_next_page = response['data']['search']['pageInfo']['hasNextPage']
@@ -36,24 +32,24 @@ def paginated_query(query, data_amount=100, page_size=50):
     return response_data
 
 
-async def async_paginated_query(query, data_amount=100, page_size=50):
-    queries = []
+# async def async_paginated_query(query, data_amount=100, page_size=50):
+#     queries = []
 
-    for index in range(0, data_amount, page_size):
-        cursor = generate_cursor(index)
+#     for index in range(0, data_amount, page_size):
+#         cursor = generate_cursor(index)
 
-        query_copy = query.replace('after: null', f'after: "{cursor}"')
+#         query_copy = query.replace('after: null', f'after: "{cursor}"')
 
-        queries.append({
-            'query': query_copy
-        })
+#         queries.append({
+#             'query': query_copy
+#         })
 
-    tasks = [create_async_task(async_request, query) for query in queries]
-    responses = await get_async_tasks_results(tasks)
+#     tasks = [create_async_task(async_request, query) for query in queries]
+#     responses = await get_async_tasks_results(tasks)
 
-    final_data = {}
+#     final_data = {}
 
-    for response_data in responses:
-        final_data.update(response_data)
+#     for response_data in responses:
+#         final_data.update(response_data)
 
-    return final_data
+#     return final_data
