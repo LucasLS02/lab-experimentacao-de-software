@@ -1,5 +1,6 @@
 import pandas as pd
-
+import base64
+from time import sleep
 from os.path import exists
 from pathlib import Path
 from time import time
@@ -15,25 +16,43 @@ def lab_3_search():
         start_time = time()
 
         query = '''
-                {
-                  search(query: "stars:>100", type: REPOSITORY, first: 50, after: null) {
+            {
+                search(query: "stars:>100", type: REPOSITORY, first: 100, after: null) {
                     nodes {
-                      ... on Repository {
+                    ... on Repository {
                         id
                         nameWithOwner
-                      }
+                        pullRequests{
+                        totalCount
+                        }
+                    }
                     }
                     pageInfo {
-                      endCursor
-                      hasNextPage
+                    endCursor
+                    hasNextPage
                     }
-                  }
                 }
+            }
         '''
 
-        response_data = paginated_query(query=query, data_amount=200, page_size=50)
+        response_data = paginated_query(query=query, data_amount=200, page_size=100)
 
-        save_on_csv(data=response_data, csv_filename=f'{__name__}_data_repository')
+        final_data = []
+        total_pull_requests = 0
+
+        for data in response_data:
+            final_data.append({
+                'id': data['id'],
+                'nameWithOwner': data['nameWithOwner'],
+                'pullRequests': data['pullRequests']['totalCount']
+            })
+            total_pull_requests += data['pullRequests']['totalCount']
+
+        save_on_csv(data=final_data, csv_filename=f'{__name__}_data_repository')
+
+        print('')
+        print(f'Total de pull requests: {total_pull_requests}')
+        print('')
 
         end_time = time()
 
@@ -48,7 +67,7 @@ def lab_3_search():
 
             query_prs = '''{
                 repository(owner: "nome-do-proprietario", name: "nome-do-repositorio") {
-                    pullRequests(first: 100, after: null) {
+                    pullRequests(first: 100, after: null, states: [MERGED, CLOSED]) {
                     nodes {
                         author {
                         login
@@ -97,7 +116,13 @@ def lab_3_search():
                     'query': query_copy
                 }
 
-                response = request_graphQl_api(data)
+                sleep(2)
+
+                try:
+                    response = request_graphQl_api(data)
+                except Exception as e:
+                    sleep(60)
+                    response = request_graphQl_api(data)
 
                 if response is None:
                     cursor = None
@@ -121,9 +146,15 @@ def lab_3_search():
         final_data = []
 
         for data in response_data:
+            sample_string_bytes = data['body'].encode() 
+            
+            base64_bytes = base64.b64encode(sample_string_bytes) 
+            base64_string = base64_bytes.decode() 
+
             final_data.append({
                 'author': data['author']['login'] if data['author'] is not None else None,
-                'body': data['body'],
+                'body': base64_string,
+                'bodySize': len(data['body']),
                 'changedFiles': data['changedFiles'],
                 'closed': data['closed'],
                 'closedAt': data['closedAt'],
@@ -152,8 +183,6 @@ def lab_3_search():
     for index, data in prs_data.iterrows():
         if isinstance(data['createdAt'], str) and isinstance(data['closedAt'], str):
             start_time = datetime.fromisoformat(data['createdAt'].replace("Z", "+00:00"))
-
-            print(f'End time: {type(data["closedAt"])}')
             end_time = datetime.fromisoformat(data['closedAt'].replace("Z", "+00:00"))
 
             has_more_than_one_hour = (end_time - start_time).seconds > 3600

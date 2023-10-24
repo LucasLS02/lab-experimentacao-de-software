@@ -5,7 +5,6 @@ from requests import post
 
 
 def request_graphQl_api(graphql_query):
-    sleep(1)
     response = post(
         url=environ['GITHUB_GRAPHQL_ENDPOINT'],
         headers={'Authorization': f'bearer {environ["GITHUB_ACCESS_TOKEN"]}'},
