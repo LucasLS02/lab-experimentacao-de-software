@@ -63,6 +63,16 @@ def lab_3_search():
         repos_data = pd.read_csv(f'data/{__name__}_data_repository.csv')
 
         for index, row in repos_data.iterrows():
+            current_repo = {
+                'current_repo': row.get('nameWithOwner'),
+                'index': index
+            }
+
+            save_on_csv(csv_filename=f'{__name__}_current_repo', data=[current_repo])
+
+            print('')
+            print(f'Faltam {len(repos_data) - index} repositórios para coletar as PR`s.')
+            print('')
             owner, name = row.get('nameWithOwner').split('/')
 
             query_prs = '''{
@@ -142,6 +152,35 @@ def lab_3_search():
                         response = response[key]
 
                     response_data.extend(response)
+
+                    final_data = []
+
+                    for data in response_data:
+                        sample_string_bytes = data['body'].encode() 
+                        
+                        base64_bytes = base64.b64encode(sample_string_bytes) 
+                        base64_string = base64_bytes.decode() 
+
+                        final_data.append({
+                            'author': data['author']['login'] if data['author'] is not None else None,
+                            'body': base64_string,
+                            'bodySize': len(data['body']),
+                            'changedFiles': data['changedFiles'],
+                            'closed': data['closed'],
+                            'closedAt': data['closedAt'],
+                            'createdAt': data['createdAt'],
+                            'deletions': data['deletions'],
+                            'id': data['id'],
+                            'lastEditedAt': data['lastEditedAt'],
+                            'merged': data['merged'],
+                            'mergedAt': data['mergedAt'],
+                            'number': data['number'],
+                            'state': data['state'],
+                            'title': data['title'],
+                            'reviews': data['reviews']['totalCount']
+                        })
+
+                    save_on_csv(data=final_data, csv_filename=f'{__name__}_data_repository_prs')
 
         final_data = []
 
