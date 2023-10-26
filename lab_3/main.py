@@ -58,9 +58,11 @@ def lab_3_search():
 
         print(f'Tempo de duração coleta dos repositórios: {round(end_time - start_time, 2)} segundos.')
 
-    if not exists(f'data/{__name__}_data_repository_prs.csv'):
+    if not exists(f'data/{__name__}_data_repository_prs.csv') or True:
         start_time = time()
         repos_data = pd.read_csv(f'data/{__name__}_data_repository.csv')
+
+        final_data = []
 
         for index, row in repos_data.iterrows():
             current_repo = {
@@ -153,67 +155,32 @@ def lab_3_search():
 
                     response_data.extend(response)
 
-                    final_data = []
+            for data in response_data:
+                sample_string_bytes = data['body'].encode() if data['body'] is not None else ''.encode()
+                
+                base64_bytes = base64.b64encode(sample_string_bytes) 
+                base64_string = base64_bytes.decode() 
 
-                    for data in response_data:
-                        sample_string_bytes = data['body'].encode() 
-                        
-                        base64_bytes = base64.b64encode(sample_string_bytes) 
-                        base64_string = base64_bytes.decode() 
+                final_data.append({
+                    'author': data['author']['login'] if data['author'] is not None else None,
+                    'body': base64_string,
+                    'bodySize': len(data['body']),
+                    'changedFiles': data['changedFiles'],
+                    'closed': data['closed'],
+                    'closedAt': data['closedAt'],
+                    'createdAt': data['createdAt'],
+                    'deletions': data['deletions'],
+                    'id': data['id'],
+                    'lastEditedAt': data['lastEditedAt'],
+                    'merged': data['merged'],
+                    'mergedAt': data['mergedAt'],
+                    'number': data['number'],
+                    'state': data['state'],
+                    'title': data['title'],
+                    'reviews': data['reviews']['totalCount']
+                })
 
-                        final_data.append({
-                            'author': data['author']['login'] if data['author'] is not None else None,
-                            'body': base64_string,
-                            'bodySize': len(data['body']),
-                            'changedFiles': data['changedFiles'],
-                            'closed': data['closed'],
-                            'closedAt': data['closedAt'],
-                            'createdAt': data['createdAt'],
-                            'deletions': data['deletions'],
-                            'id': data['id'],
-                            'lastEditedAt': data['lastEditedAt'],
-                            'merged': data['merged'],
-                            'mergedAt': data['mergedAt'],
-                            'number': data['number'],
-                            'state': data['state'],
-                            'title': data['title'],
-                            'reviews': data['reviews']['totalCount']
-                        })
-
-                    save_on_csv(data=final_data, csv_filename=f'{__name__}_data_repository_prs')
-
-        final_data = []
-
-        for data in response_data:
-            sample_string_bytes = data['body'].encode() 
-            
-            base64_bytes = base64.b64encode(sample_string_bytes) 
-            base64_string = base64_bytes.decode() 
-
-            final_data.append({
-                'author': data['author']['login'] if data['author'] is not None else None,
-                'body': base64_string,
-                'bodySize': len(data['body']),
-                'changedFiles': data['changedFiles'],
-                'closed': data['closed'],
-                'closedAt': data['closedAt'],
-                'createdAt': data['createdAt'],
-                'deletions': data['deletions'],
-                'id': data['id'],
-                'lastEditedAt': data['lastEditedAt'],
-                'merged': data['merged'],
-                'mergedAt': data['mergedAt'],
-                'number': data['number'],
-                'state': data['state'],
-                'title': data['title'],
-                'reviews': data['reviews']['totalCount']
-            })
-
-        save_on_csv(data=final_data, csv_filename=f'{__name__}_data_repository_prs')
-
-        end_time = time()
-
-        print(f'Tempo de duração coleta das PR`s dos repositórios: {round(end_time - start_time, 2)} segundos.')
+            save_on_csv(data=final_data, csv_filename=f'{__name__}_data_repository_prs')
 
     prs_data = pd.read_csv(f'data/{__name__}_data_repository_prs.csv')
 
